@@ -4,6 +4,7 @@ import axios from 'axios';
 const App = () => {
   const [image, setImage] = useState(null);
   const [plantData, setPlantData] = useState([]);
+  const [error, setError] = useState(null);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
 
@@ -40,8 +41,18 @@ const App = () => {
     formData.append('image', dataURLtoBlob(dataUrl));
 
     axios.post('https://hackers-elit-backend.vercel.app/upload', formData)
-      .then(response => setPlantData(response.data))
-      .catch(error => console.error('Error uploading image:', error));
+      .then(response => {
+        console.log('API Response:', response.data);
+        if (response.data.error) {
+          setError(response.data.error);
+        } else {
+          setPlantData(response.data);
+        }
+      })
+      .catch(error => {
+        console.error('Error uploading image:', error);
+        setError('Error uploading image. Please try again.');
+      });
   };
 
   // Utility function to convert dataURL to Blob
@@ -121,14 +132,22 @@ const App = () => {
           </div>
         )}
 
-        <h2 className="text-xl font-semibold mb-2">Detected Plants</h2>
-        <ul className="list-disc list-inside">
-          {plantData.map((plant, index) => (
-            <li key={index} className="mb-1">
-              <span className="font-semibold">{plant.plantName}</span> - {plant.disease} (Confidence: {plant.confidence})
-            </li>
-          ))}
-        </ul>
+        {error && <p className="text-red-500">{error}</p>}
+
+        {plantData.length > 0 ? (
+          <div className="mb-4">
+            <h2 className="text-xl font-semibold mb-2">Detected Plants</h2>
+            <ul className="list-disc list-inside">
+              {plantData.map((plant, index) => (
+                <li key={index} className="mb-1">
+                  <span className="font-semibold">{plant.plantName}</span> - {plant.disease} (Confidence: {plant.confidence})
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : (
+          !error && <p className="text-gray-600">No plant data available. Please capture an image and try again.</p>
+        )}
       </div>
     </div>
   );
