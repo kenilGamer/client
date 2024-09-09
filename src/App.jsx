@@ -44,7 +44,7 @@ const App = () => {
     const formData = new FormData();
     formData.append('image', dataURLtoBlob(dataUrl));
 
-    axios.post('http://localhost:5000/upload', formData)
+    axios.post('https://hackers-elit-backend.vercel.app/upload', formData)
       .then(response => setPlantData(response.data))
       .catch(error => console.error('Error uploading image:', error));
   };
