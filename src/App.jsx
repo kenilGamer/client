@@ -8,23 +8,18 @@ const App = () => {
   const canvasRef = useRef(null);
 
   // Start the camera
-  const startCamera = async () => {
-    try {
-      const constraints = {
-        video: {
-          facingMode: { exact: 'environment' },
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
-        }
-      };
-
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      videoRef.current.srcObject = stream;
-      videoRef.current.play();
-    } catch (error) {
-      console.error('Error accessing camera:', error);
-      alert('Failed to access the camera. Please make sure you have granted permissions and your device has a rear camera.');
+  const startCamera = () => {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      console.error('Camera API not supported');
+      return;
     }
+
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => {
+        videoRef.current.srcObject = stream;
+        videoRef.current.play();
+      })
+      .catch(err => console.error('Error accessing camera: ', err));
   };
 
   // Capture image from camera
