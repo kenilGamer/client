@@ -11,17 +11,29 @@ const App = () => {
   // Start the camera
   const startCamera = () => {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      console.error('Camera API not supported');
+      setError('Camera API not supported');
       return;
     }
-
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      // Proceed with camera access
+    } else {
+      console.error('Camera API not supported');
+    }
+    
+  
     navigator.mediaDevices.getUserMedia({ video: true })
       .then(stream => {
-        videoRef.current.srcObject = stream;
-        videoRef.current.play();
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          videoRef.current.play();
+        }
       })
-      .catch(err => console.error('Error accessing camera: ', err));
+      .catch(err => {
+        console.error('Error accessing camera: ', err);
+        setError('Error accessing camera. Please make sure you have allowed camera access in your browser settings.');
+      });
   };
+  
 
   // Capture image from camera
   const captureImage = () => {
@@ -40,7 +52,7 @@ const App = () => {
     const formData = new FormData();
     formData.append('image', dataURLtoBlob(dataUrl));
 
-    axios.post('https://hackers-elit-backend.vercel.app/upload', formData)
+    axios.post('https://localhost:5000/upload', formData)
       .then(response => {
         console.log('API Response:', response.data);
         if (response.data.error) {
