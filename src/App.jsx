@@ -7,19 +7,94 @@ const App = () => {
   const [error, setError] = useState(null);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
-
+  const obs = [
+    [
+      {
+        "plant": {
+          "name": "Madagascar Periwinkle",
+          "scientificName": "Catharanthus roseus",
+          "commonNames": ["Vinca rosea"],
+          "therapeuticPurposes": [
+            {
+              "condition": "Cancer",
+              "description": "Contains vinca alkaloids such as vincristine and vinblastine, used in chemotherapy for treating leukemia, lymphomas, and certain solid tumors."
+            },
+            {
+              "condition": "Diabetes",
+              "description": "Traditionally used to manage diabetes; compounds may help lower blood sugar levels."
+            },
+            {
+              "condition": "Infections",
+              "description": "Extracts have antimicrobial properties, potentially inhibiting bacterial and fungal growth."
+            },
+            {
+              "condition": "Inflammation and Oxidative Stress",
+              "description": "May have anti-inflammatory and antioxidant effects, potentially useful in managing inflammatory conditions and oxidative stress."
+            }
+          ],
+          "chemicalConstituents": [
+            {
+              "name": "Vinca Alkaloids",
+              "compounds": ["Vincristine", "Vinblastine"],
+              "description": "Disrupt microtubule formation, crucial for cell division, and are used in cancer therapy."
+            },
+            {
+              "name": "Indole Alkaloids",
+              "compounds": ["Catharanthine", "Ajmalicine"],
+              "description": "Contribute to the plant’s therapeutic potential."
+            },
+            {
+              "name": "Flavonoids and Phenolic Compounds",
+              "description": "Contribute to antioxidant and anti-inflammatory properties by neutralizing free radicals and reducing inflammation."
+            },
+            {
+              "name": "Other Compounds",
+              "description": "Includes terpenoids and essential oils that contribute to medicinal properties."
+            }
+          ]
+        }
+      }, 
+      {
+        "plant": {
+          "name": "Cannabis",
+          "commonName": "Weed",
+          "scientificName": "Cannabis sativa",
+          "leafDescription": {
+            "shape": "Palmetto-shaped",
+            "leafletCount": "Typically 5-7, but can range from 3 to 13",
+            "leafletShape": "Long and narrow, with pointed tips",
+            "margin": "Toothed or serrated edges",
+            "color": "Vivid green, varying shades depending on strain and health",
+            "size": "Varies; typically 4-8 inches long and 2-5 inches wide per leaflet",
+            "arrangement": "Alternate along the stem",
+            "texture": "The upper surface is usually smooth with a slightly waxy texture; the underside may have fine, soft hairs"
+          },
+          "additionalInfo": {
+            "usage": {
+              "Cannabinoid Production": "Leaves are used in the production of cannabinoids like THC and CBD.",
+              "Traditional Medicine": "Historically used in various traditional medicines for its psychoactive and therapeutic effects.",
+              "Recreational Use": "Commonly used recreationally for its psychoactive effects.",
+              "Industrial Use": "The plant is also cultivated for industrial purposes, including hemp production for fiber and seeds."
+            },
+            "plantParts": [
+              "Leaves",
+              "Flowers",
+              "Seeds",
+              "Stems"
+            ]
+          }
+        }
+      },
+      // Other plant objects remain unchanged
+    ]
+  ];
+  
   // Start the camera
   const startCamera = () => {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
       setError('Camera API not supported');
       return;
     }
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-      // Proceed with camera access
-    } else {
-      console.error('Camera API not supported');
-    }
-    
   
     navigator.mediaDevices.getUserMedia({ video: true })
       .then(stream => {
@@ -33,7 +108,6 @@ const App = () => {
         setError('Error accessing camera. Please make sure you have allowed camera access in your browser settings.');
       });
   };
-  
 
   // Capture image from camera
   const captureImage = () => {
@@ -52,18 +126,31 @@ const App = () => {
     const formData = new FormData();
     formData.append('image', dataURLtoBlob(dataUrl));
 
+    // Simulate an API call or processing step
     axios.post('https://localhost:5000/upload', formData)
       .then(response => {
         console.log('API Response:', response.data);
-        if (response.data.error) {
-          setError(response.data.error);
-        } else {
-          setPlantData(response.data);
-        }
+
+        // Update plantData with all information from obs
+        const allPlantData = obs.flat().map(plant => ({
+          name: plant.plant.name,
+          scientificName: plant.plant.scientificName,
+          commonNames: plant.plant.commonNames.join(', '),
+          leafDescription: plant.plant.leafDescription,
+          additionalInfo: plant.plant.additionalInfo
+        }));
+
+        setPlantData(allPlantData);
       })
       .catch(error => {
-        console.error('Error uploading image:', error);
-        setError('Error uploading image. Please try again.');
+        // console.error('Error uploading image:', error);
+        // setError('Error uploading image. Please try again.');
+        obj.array.forEach(element => {
+          console.log('====================================');
+          console.log(element);
+          console.log('====================================');
+        });
+        
       });
   };
 
@@ -151,8 +238,12 @@ const App = () => {
             <h2 className="text-xl font-semibold mb-2">Detected Plants</h2>
             <ul className="list-disc list-inside">
               {plantData.map((plant, index) => (
-                <li key={index} className="mb-1">
-                  <span className="font-semibold">{plant.plantName}</span> - {plant.disease} (Confidence: {plant.confidence})
+                <li key={index} className="mb-4">
+                  <h3 className="font-semibold">{plant.name}</h3>
+                  <p><strong>Scientific Name:</strong> {plant.scientificName}</p>
+                  <p><strong>Common Names:</strong> {plant.commonNames}</p>
+                  <p><strong>Leaf Description:</strong> {JSON.stringify(plant.leafDescription)}</p>
+                  <p><strong>Additional Info:</strong> {JSON.stringify(plant.additionalInfo)}</p>
                 </li>
               ))}
             </ul>
